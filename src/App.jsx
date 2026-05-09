@@ -137,7 +137,7 @@ const [view, setView] = useState(
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <LogoDisplay biz={biz} size={30} radius={6} fontSize={15} />
           <span className="pf" style={{ color:"#F5F0E8", fontSize:14, fontWeight:700 }}>{biz.name}</span>
-          <span style={{ background:"#1A1A1A", border:"1px solid #2A2A2A", color:acc, fontSize:9, letterSpacing:2, padding:"3px 8px" }}>DASHBOARD</span>
+          
         </div>
         
       </div>
