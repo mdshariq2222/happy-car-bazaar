@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import {
   collection,
   getDocs,
@@ -8,6 +8,7 @@ import {
   doc,
   updateDoc
 } from "firebase/firestore";
+import { signInWithEmailAndPassword } from "firebase/auth";
 const DEFAULT_BUSINESS = {
   name: "Happy Car Bazaar",
   tagline: "Your Trusted Used Car Dealership",
@@ -166,7 +167,11 @@ const [view, setView] = useState(
       }}
     >
       <h1>Admin Login</h1>
-
+      <input
+  type="email"
+  id="adminEmail"
+  placeholder="Admin Email"
+/>
       <input
         type="password"
         placeholder="Enter Password"
@@ -181,15 +186,24 @@ const [view, setView] = useState(
       />
 
       <button
-        onClick={() => {
-          const pass =
-            document.getElementById("adminPass").value;
+        onClick={async () => {
+          
 
-          if(pass === "happycar123"){
-            setIsLoggedIn(true);
-          } else {
-            alert("Wrong Password");
-          }
+          try {
+
+  await signInWithEmailAndPassword(
+    auth,
+    document.getElementById("adminEmail").value,
+    document.getElementById("adminPass").value
+  );
+
+  setIsLoggedIn(true);
+
+} catch (err) {
+
+  alert("Invalid Email or Password");
+
+}
         }}
         style={{
           padding:"12px 20px",
