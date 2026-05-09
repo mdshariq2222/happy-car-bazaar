@@ -117,12 +117,18 @@ const [view, setView] = useState(
   const acc = biz.accentColor;
   const saveBusinessSettings = async () => {
 
-  setBiz(bizForm);
+  const updatedData = {
+    ...bizForm
+  };
 
   await setDoc(
     doc(db, "settings", "business"),
-    bizForm
+    updatedData
   );
+
+  setBiz(updatedData);
+
+  setBizForm(updatedData);
 
   alert("Business settings saved!");
 
@@ -1263,7 +1269,22 @@ setBizForm, saveBusinessSettings, setPosts }) {
   const deletePost = () => { setPosts(prev=>prev.filter(p=>p.id!==editPost.id)); setPostModal(null); showToast("🗑️ Update removed"); };
   const togglePin  = (post) => { setPosts(prev=>prev.map(p=>({...p, pinned: p.id===post.id ? !p.pinned : false}))); showToast(post.pinned?"📌 Unpinned":"📌 Post pinned to homepage!"); };
 
-  const saveBiz = () => { setBiz({...bizForm}); showToast("✅ Business profile saved! All changes are now live."); };
+  const saveBiz = async () => {
+
+  const updatedData = {
+    ...bizForm
+  };
+
+  await setDoc(
+    doc(db, "settings", "business"),
+    updatedData
+  );
+
+  setBiz(updatedData);
+
+  showToast("✅ Business profile updated!");
+
+};
 
   const featCount = cars.filter(c=>c.featured).length;
   const totalVal  = cars.reduce((s,c)=>s+Number(c.price),0);
