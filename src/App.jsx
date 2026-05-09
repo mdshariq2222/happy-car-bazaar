@@ -58,7 +58,7 @@ const getInstagramHandle = value => {
 // ════════════════════════════════════════════════════════════════════
 export default function App() {
   const [view, setView] = useState(
-  window.location.pathname === "/admin-secret"
+  window.location.search.includes("admin=true")
     ? "admin"
     : "website"
 );
