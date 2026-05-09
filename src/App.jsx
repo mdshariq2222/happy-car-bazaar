@@ -65,10 +65,12 @@ const getInstagramHandle = value => {
 // ROOT
 // ════════════════════════════════════════════════════════════════════
 export default function App() {
-  const [view, setView] = useState(
-  window.location.search.includes("admin=true")
-    ? "admin"
-    : "website"
+  const isAdminRoute = window.location.search.includes("admin=true");
+
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+const [view, setView] = useState(
+  isAdminRoute ? "admin" : "website"
 );
   const [cars, setCars] = useState([]);
   useEffect(() => {
@@ -141,32 +143,66 @@ export default function App() {
 
       {view==="website" && <WebsiteView cars={cars} biz={biz} posts={posts} />}
       {view==="admin" && (
-  prompt("Enter Admin Password") === "happycar123"
-    ? (
-      <AdminView
-        cars={cars}
-        setCars={setCars}
-        biz={biz}
-        setBiz={setBiz}
-        posts={posts}
-        setPosts={setPosts}
-      />
-    )
-    : (
-      <div
+  isLoggedIn ? (
+    <AdminView
+      cars={cars}
+      setCars={setCars}
+      biz={biz}
+      setBiz={setBiz}
+      posts={posts}
+      setPosts={setPosts}
+    />
+  ) : (
+    <div
+      style={{
+        background:"#000",
+        color:"#fff",
+        minHeight:"100vh",
+        display:"flex",
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"column",
+        gap:"20px"
+      }}
+    >
+      <h1>Admin Login</h1>
+
+      <input
+        type="password"
+        placeholder="Enter Password"
+        id="adminPass"
         style={{
-          background:"#000",
+          padding:"12px",
+          width:"300px",
+          background:"#111",
+          border:"1px solid #333",
+          color:"#fff"
+        }}
+      />
+
+      <button
+        onClick={() => {
+          const pass =
+            document.getElementById("adminPass").value;
+
+          if(pass === "happycar123"){
+            setIsLoggedIn(true);
+          } else {
+            alert("Wrong Password");
+          }
+        }}
+        style={{
+          padding:"12px 20px",
+          background:"#E83E5A",
+          border:"none",
           color:"#fff",
-          minHeight:"100vh",
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center",
-          fontSize:"40px"
+          cursor:"pointer"
         }}
       >
-        Access Denied
-      </div>
-    )
+        Login
+      </button>
+    </div>
+  )
 )}
     </div>
   );
