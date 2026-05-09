@@ -1,5 +1,13 @@
-import { useState, useRef } from "react";
-
+import { useState, useRef, useEffect } from "react";
+import { db } from "./firebase";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc
+} from "firebase/firestore";
 const DEFAULT_BUSINESS = {
   name: "Happy Car Bazaar",
   tagline: "Your Trusted Used Car Dealership",
@@ -62,13 +70,37 @@ export default function App() {
     ? "admin"
     : "website"
 );
-  const [cars,  setCars]  = useState(DEFAULT_CARS);
+  const [cars, setCars] = useState([]);
+  useEffect(() => {
+  const fetchCars = async () => {
+    const querySnapshot = await getDocs(collection(db, "cars"));
+
+    const carsData = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setCars(carsData);
+  };
+
+  fetchCars();
+}, []);
   const [biz,   setBiz]   = useState(DEFAULT_BUSINESS);
   const [posts, setPosts] = useState(DEFAULT_POSTS);
   const acc = biz.accentColor;
 
   return (
-    <div style={{ fontFamily:"'DM Sans',sans-serif", background:"#0A0A0A", minHeight:"100vh" }}>
+    <div
+  style={{
+    fontFamily:"'DM Sans',sans-serif",
+    background:"#0A0A0A",
+    minHeight:"100vh",
+    width:"100vw",
+    overflowX:"hidden",
+    margin:0,
+    padding:0
+  }}
+>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
         *{margin:0;padding:0;box-sizing:border-box;}
@@ -249,7 +281,19 @@ function WebsiteView({ cars, biz, posts }) {
         <section style={{ minHeight:"78vh", display:"flex", alignItems:"center", background:heroImage?`linear-gradient(90deg,rgba(43,0,72,.92),rgba(43,0,72,.62),rgba(43,0,72,.2)),url(${heroImage}) center/cover`:`linear-gradient(135deg,${purple} 0%,${purple2} 58%,#7B1B8D 100%)`, position:"relative", overflow:"hidden", padding:"76px 32px 36px" }}>
           <div style={{ position:"absolute", inset:0, background:`radial-gradient(circle at 75% 18%,${acc}44,transparent 34%),linear-gradient(180deg,transparent 0%,rgba(43,0,72,.28) 100%)`, pointerEvents:"none" }} />
           <div style={{ position:"absolute", left:32, right:32, bottom:0, height:1, background:"rgba(255,255,255,.08)" }} />
-          <div className="wg2" style={{ maxWidth:1200, margin:"0 auto", width:"100%", display:"grid", gridTemplateColumns:"1.05fr 0.95fr", gap:56, alignItems:"center", position:"relative", zIndex:1 }}>
+          <div
+  className="wg2"
+  style={{
+    width: "100%",
+    padding: "0 40px",
+    display: "grid",
+    gridTemplateColumns: "1.05fr 0.95fr",
+    gap: 56,
+    alignItems: "center",
+    position: "relative",
+    zIndex: 1
+  }}
+>
             <div className="fade-up">
               <div className="dm" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,.14)", border:"1px solid rgba(255,255,255,.24)", padding:"7px 11px", fontSize:10, letterSpacing:2.6, color:"#fff", textTransform:"uppercase", marginBottom:18 }}>Verified Used Cars</div>
               <h1 className="dm" style={{ fontSize:"clamp(34px,6vw,78px)", fontWeight:800, lineHeight:1.04, marginBottom:20, letterSpacing:0, color:"#fff" }}>
@@ -303,7 +347,7 @@ function WebsiteView({ cars, biz, posts }) {
         {/* LATEST UPDATES on homepage */}
         {posts.length > 0 && (
           <section style={{ padding:"64px 32px", background:"#fff" }}>
-            <div style={{ maxWidth:1200, margin:"0 auto" }}>
+            <div style={{ width:"100%", padding:"0 40px"}}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:32, flexWrap:"wrap", gap:12 }}>
                 <SubHead label="Latest from Us" title="News & Updates" accent={acc} />
                 <button onClick={()=>setPage("updates")} style={{ background:"transparent", color:acc, border:`1px solid ${acc}`, padding:"8px 18px", fontSize:11, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>View All →</button>
@@ -319,7 +363,7 @@ function WebsiteView({ cars, biz, posts }) {
 
         {/* FEATURED CARS */}
         <section style={{ padding:"72px 32px", background:lavender }}>
-          <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px" }}>
             <SubHead label="Our Collection" title="Featured Vehicles" accent={acc} titleColor={purple} />
             <div className="wg3" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
               {featured.slice(0,3).map(c=><CarCard key={c.id} car={c} acc={acc} onView={()=>openDetails(c)} onI={()=>{setSelCar(c);setModal("inquiry")}} onT={()=>{setSelCar(c);setModal("testdrive")}} />)}
@@ -332,7 +376,7 @@ function WebsiteView({ cars, biz, posts }) {
 
         {/* WHY US — 7-day returns REMOVED, replaced with Finance */}
         <section style={{ padding:"72px 32px", background:"#fff" }}>
-          <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px"}}>
             <SubHead label="Why Choose Us" title={`The ${biz.name} Difference`} accent={acc} center titleColor={purple} />
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(210px,1fr))", gap:20 }}>
               {[
@@ -353,7 +397,7 @@ function WebsiteView({ cars, biz, posts }) {
 
         {/* CONTACT STRIP */}
         <section style={{ padding:"64px 32px", background:lavender }}>
-          <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px" }}>
             <SubHead label="Find Us" title="Visit Our Showroom" accent={acc} titleColor={purple} />
             <div className="wg2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:40 }}>
               <div style={{ background:"#fff", border:"1px solid #E8DDF1", height:300, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10, borderRadius:20, boxShadow:"0 18px 45px rgba(43,0,72,.08)" }}>
@@ -381,7 +425,7 @@ function WebsiteView({ cars, biz, posts }) {
 
         {/* CONNECT / INSTAGRAM */}
         <section style={{ padding:"68px 32px", background:"#fff", borderTop:"1px solid #E8DDF1", borderBottom:"1px solid #E8DDF1" }}>
-          <div className="wg2" style={{ maxWidth:1200, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:34, alignItems:"center" }}>
+          <div className="wg2" style={{ width:"100%", padding:"0 40px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:34, alignItems:"center" }}>
             <div>
               <div className="dm" style={{ fontSize:10, letterSpacing:4, color:acc, textTransform:"uppercase", marginBottom:12 }}>Connect With Us</div>
               <h2 className="dm" style={{ fontSize:"clamp(28px,4vw,46px)", color:purple, fontWeight:800, lineHeight:1.1, marginBottom:14 }}>Follow our latest stock on Instagram.</h2>
@@ -414,7 +458,7 @@ function WebsiteView({ cars, biz, posts }) {
       {/* ── UPDATES PAGE ── */}
       {page==="updates" && (
         <section style={{ padding:"52px 32px", minHeight:"80vh" }}>
-          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px" }}>
             <SubHead label="Stay Informed" title="News & Updates" accent={acc} />
             {allPosts.length === 0 && (
               <div style={{ textAlign:"center", padding:"60px 0", color:"#B8A98A" }}>
@@ -443,7 +487,7 @@ function WebsiteView({ cars, biz, posts }) {
       {/* ── INVENTORY ── */}
       {page==="inventory" && (
         <section style={{ padding:"56px 32px", minHeight:"80vh", background:lavender }}>
-          <div style={{ maxWidth:1200, margin:"0 auto" }}>
+          <div style={{width:"100%", padding:"0 40px"}}>
             <SubHead label="Available Now" title={`Inventory (${cars.length} Vehicles)`} accent={acc} titleColor={purple} />
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:32 }}>
               {cats.map(f=><button key={f} onClick={()=>setFilter(f)} style={{ background:filter===f?purple:"#fff", border:`1px solid ${filter===f?purple:"#D8C4E8"}`, color:filter===f?"#fff":purple, padding:"9px 18px", fontSize:11, letterSpacing:1.2, textTransform:"uppercase", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:800, borderRadius:12 }}>{f}</button>)}
@@ -458,7 +502,7 @@ function WebsiteView({ cars, biz, posts }) {
       {/* ── ABOUT ── */}
       {page==="about" && (
         <section style={{ padding:"52px 32px", minHeight:"80vh" }}>
-          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px"}}>
             <div className="wg2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:64, alignItems:"center" }}>
               <div>
                 <SubHead label="Our Story" title={`About ${biz.name}`} accent={acc} />
@@ -482,7 +526,7 @@ function WebsiteView({ cars, biz, posts }) {
       {/* ── CONTACT ── */}
       {page==="contact" && (
         <section style={{ padding:"52px 32px", minHeight:"80vh" }}>
-          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ width:"100%", padding:"0 40px" }}>
             <div className="wg2" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:52 }}>
               <div>
                 <SubHead label="Get In Touch" title="We're Here to Help" accent={acc} />
@@ -519,7 +563,7 @@ function WebsiteView({ cars, biz, posts }) {
 
       {/* FOOTER */}
       <footer style={{ background:purple, borderTop:"1px solid rgba(255,255,255,.12)", padding:"48px 32px 24px" }}>
-        <div style={{ maxWidth:1200, margin:"0 auto" }}>
+        <div style={{ width:"100%", padding:"0 40px" }}>
           <div className="wfoot" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:36, marginBottom:36 }}>
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
@@ -1034,15 +1078,84 @@ function AdminView({ cars, setCars, biz, setBiz, posts, setPosts }) {
   const openAddCar  = ()    => { setCarForm(BLANK_CAR); setEditCar(null); setCarModal("add"); };
   const openEditCar = car   => { setCarForm({...car, images:getCarImages(car), year:String(car.year), price:String(car.price)}); setEditCar(car); setCarModal("edit"); };
   const openDelCar  = car   => { setEditCar(car); setCarModal("delete"); };
-  const saveCar = () => {
-    if(!carForm.name||!carForm.year||!carForm.price){ showToast("⚠️ Name, Year & Price required"); return; }
-    const c = {...carForm, images:getCarImages(carForm), id:editCar?editCar.id:Date.now(), year:parseInt(carForm.year), price:parseInt(carForm.price)};
-    setCars(prev => editCar ? prev.map(x=>x.id===editCar.id?c:x) : [...prev,c]);
-    setCarModal(null);
-    showToast(editCar?"✅ Car updated!":"✅ New car added to inventory!");
-  };
-  const deleteCar = () => { setCars(prev=>prev.filter(c=>c.id!==editCar.id)); setCarModal(null); showToast("🗑️ Car removed from inventory"); };
+  const saveCar = async () => {
 
+  if(!carForm.name || !carForm.year || !carForm.price){
+    showToast("⚠️ Name, Year & Price required");
+    return;
+  }
+
+  const c = {
+  ...carForm,
+  images: getCarImages(carForm).map(img => ({
+    name: img.name || "car-image",
+    src: img.src || img
+  }))
+};
+
+  try {
+
+    if(editCar){
+
+      await updateDoc(doc(db, "cars", editCar.id), c);
+
+    } else {
+
+      await addDoc(collection(db, "cars"), {
+        ...c,
+        createdAt: Date.now()
+      });
+
+    }
+
+    const querySnapshot = await getDocs(collection(db, "cars"));
+
+    const carsData = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setCars(carsData);
+
+    setCarModal(null);
+
+    showToast("✅ Car saved!");
+
+  } catch(err) {
+
+    console.error(err);
+
+    showToast("❌ Error saving car");
+
+  }
+
+};
+  const deleteCar = async () => {
+
+  try {
+
+    await deleteDoc(doc(db, "cars", editCar.id));
+
+    const querySnapshot = await getDocs(collection(db, "cars"));
+
+    const carsData = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setCars(carsData);
+
+    setCarModal(null);
+
+    showToast("🗑️ Car deleted!");
+
+  } catch(err) {
+
+    console.error(err);
+
+    showToast("❌ Error deleting car");
+  }
+};
   // Post CRUD
   const openAddPost  = ()    => { setPostForm(BLANK_POST); setEditPost(null); setPostModal("add"); };
   const openEditPost = post  => { setPostForm({...post}); setEditPost(post); setPostModal("edit"); };
