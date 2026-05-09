@@ -6,7 +6,9 @@ import {
   addDoc,
   deleteDoc,
   doc,
-  updateDoc
+  updateDoc,
+  setDoc,
+  getDoc
 } from "firebase/firestore";
 import { signInWithEmailAndPassword } from "firebase/auth";
 const DEFAULT_BUSINESS = {
@@ -88,9 +90,43 @@ const [view, setView] = useState(
 
   fetchCars();
 }, []);
+
   const [biz,   setBiz]   = useState(DEFAULT_BUSINESS);
+  const [bizForm, setBizForm] = useState(DEFAULT_BUSINESS);
   const [posts, setPosts] = useState(DEFAULT_POSTS);
+  useEffect(() => {
+
+  const loadBusiness = async () => {
+
+    const docRef = doc(db, "settings", "business");
+
+    const snap = await getDoc(docRef);
+
+    if (snap.exists()) {
+
+      setBiz(snap.data());
+      setBizForm(snap.data());
+
+    }
+
+  };
+
+  loadBusiness();
+
+}, []);
   const acc = biz.accentColor;
+  const saveBusinessSettings = async () => {
+
+  setBiz(bizForm);
+
+  await setDoc(
+    doc(db, "settings", "business"),
+    bizForm
+  );
+
+  alert("Business settings saved!");
+
+};
 
   return (
     <div
@@ -146,13 +182,20 @@ const [view, setView] = useState(
       {view==="admin" && (
   isLoggedIn ? (
     <AdminView
-      cars={cars}
-      setCars={setCars}
-      biz={biz}
-      setBiz={setBiz}
-      posts={posts}
-      setPosts={setPosts}
-    />
+  cars={cars}
+  setCars={setCars}
+
+  biz={biz}
+  setBiz={setBiz}
+
+  bizForm={bizForm}
+  setBizForm={setBizForm}
+
+  posts={posts}
+  setPosts={setPosts}
+
+  saveBusinessSettings={saveBusinessSettings}
+/>
   ) : (
     <div
       style={{
@@ -1060,14 +1103,14 @@ function MobileView({ cars, biz, posts }) {
 // ════════════════════════════════════════════════════════════════════
 // ADMIN PANEL
 // ════════════════════════════════════════════════════════════════════
-function AdminView({ cars, setCars, biz, setBiz, posts, setPosts }) {
+function AdminView({ cars, setCars, biz, setBiz, posts, bizForm,
+setBizForm, saveBusinessSettings, setPosts }) {
   const [tab,      setTab]      = useState("profile");
   const [carModal, setCarModal] = useState(null);
   const [editCar,  setEditCar]  = useState(null);
   const [postModal,setPostModal]= useState(null);
   const [editPost, setEditPost] = useState(null);
   const [toast,    setToast]    = useState("");
-  const [bizForm,  setBizForm]  = useState({...biz});
   const logoInputRef = useRef();
   const carImageInputRef = useRef();
   const acc = biz.accentColor;
@@ -1277,7 +1320,7 @@ function AdminView({ cars, setCars, biz, setBiz, posts, setPosts }) {
             <Field label="Tagline (shown under logo & in nav)" accentColor={acc}><Inp value={bizForm.tagline} onChange={e=>bf("tagline",e.target.value)} placeholder="e.g. Your Trusted Used Car Dealership" /></Field>
             <Field label="Scrolling Banner Text (ticker at top of website)" accentColor={acc}><Inp value={bizForm.taglineSub} onChange={e=>bf("taglineSub",e.target.value)} placeholder="e.g. Certified Pre-Owned | Free Test Drives | Finance Available" /></Field>
           </div>
-          <button onClick={saveBiz} style={{ marginTop:22, background:acc, color:"#000", border:"none", padding:"12px 28px", fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", cursor:"pointer" }}>💾 Save Profile</button>
+          <button onClick={saveBusinessSettings} style={{ marginTop:22, background:acc, color:"#000", border:"none", padding:"12px 28px", fontFamily:"'DM Sans',sans-serif", fontSize:12, fontWeight:600, letterSpacing:1.5, textTransform:"uppercase", cursor:"pointer" }}>💾 Save Profile</button>
         </div>
       )}
 
